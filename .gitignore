@@ -19,4 +19,12 @@ htmlcov/
 
 # macOS
 .DS_Store
+
+# cache files
+.caches/
+.cache
+.cache*
+
+# research files
+research.ipynb
     
