@@ -1,0 +1,3 @@
+# Requirements for the Spotify Playlist Project
+spotipy
+python-dotenv
