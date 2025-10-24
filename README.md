@@ -1,68 +1,29 @@
-# VSCode Project Template
+# Spotify Playlist Compiler
 
-A minimal and clean template for Python projects in Visual Studio Code.  
-It includes a preconfigured `.vscode` folder for environment auto-activation and Copilot instruction files.
+An application to export your Spotify playlists to CSV files.
+
+This project compiles all your playlists and tracks from Spotify into easily accessible CSV files, allowing you to:
+- Export all your playlists with metadata (name, owner, track count, etc.)
+- Export all tracks from your playlists with detailed information (artist, album, duration, explicit flag, etc.)
+- Manage multiple user accounts with separate cache files
+- Handle API rate limiting gracefully
+
+---
+
+## Features
+
+- 🔐 Secure Spotify OAuth authentication
+- 📊 Exports playlists to CSV format
+- 🎵 Exports all tracks with comprehensive metadata
+- 👥 Multi-user support with dedicated cache files
+- ⚡ Rate limiting and retry logic for API calls
+- 🛡️ Safe nested dictionary access for robust data extraction
 
 ---
 
 ## Setup
 
-### 1. Create and activate a virtual environment
 
-Open a **new integrated terminal** in VS Code (``Ctrl+` `` or from the menu *Terminal → New Terminal*)  
-and run the following commands:
-
-```bash
-# Create a new virtual environment (Python 3.12 recommended)
-python -m venv .venv
-
-# Activate it (macOS / Linux)
-source .venv/bin/activate
-
-# On Windows (PowerShell)
-.venv\Scripts\Activate.ps1
-```
-
-When activated, your terminal prompt should show `(.venv)`.
-
----
-
-### 2. Verify that everything works
-
-Run this command in the **same terminal** to confirm that Python is using the correct virtual environment:
-
-```bash
-python -c "import sys, os; print('Python:', sys.executable); print('VIRTUAL_ENV:', os.environ.get('VIRTUAL_ENV'))"
-```
-
-Expected output:
-
-```
-Python: /path/to/your/project/.venv/bin/python
-VIRTUAL_ENV: /path/to/your/project/.venv
-```
-
-If both paths match your project folder, your environment is set up correctly ✅
-
----
-
-### 3. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-(Leave `requirements.txt` empty or list your default dependencies.)
-
----
-
-### 4. Run your scripts
-
-```bash
-python your_script.py
-```
-
-VS Code will automatically detect and activate the `.venv` environment.
 
 ---
 
@@ -71,12 +32,85 @@ VS Code will automatically detect and activate the `.venv` environment.
 ```
 .github/               # Copilot and instructions files
 .vscode/               # VSCode settings and extensions
-.gitignore             # Excludes .venv and other temporary files
-.AGENTS.md             # 
-LICENSE
+.caches/               # User authentication cache files
+.gitignore             # Excludes .venv, .env, and temporary files
+AGENTS.md              # AI assistant documentation
+LICENSE                # MIT License
 README.md              # This file
 requirements.txt       # Project dependencies
+research.ipynb         # Development notebook with export logic
+export_spotify.py      # Main export script
 ```
+
+---
+
+## 🚀 Usage
+
+### Requirements
+- Python 3.10+
+- Spotify Developer Account ([register here](https://developer.spotify.com/dashboard))
+
+### Installation
+
+1. Clone the repository
+2. Create a virtual environment:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # macOS/Linux
+   .venv\Scripts\activate     # Windows
+   ```
+
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Create a `.env` file with your Spotify credentials:
+   ```
+   SPOTIPY_CLIENT_ID=your_client_id
+   SPOTIPY_CLIENT_SECRET=your_client_secret
+   SPOTIPY_REDIRECT_URI=http://127.0.0.1:8000/callback
+   ```
+
+### Running the Export
+
+Execute the script to export your playlists and tracks:
+```bash
+python export_spotify.py
+```
+
+Or use the Jupyter notebook in VS Code:
+```bash
+research.ipynb
+```
+
+This will generate two CSV files:
+- `playlists_<username>.csv` - All playlists with metadata
+- `tracks_<username>.csv` - All tracks from all playlists with detailed information
+
+---
+
+## 📄 Output Files
+
+### Playlists CSV
+- `playlist_id`, `name`, `public`, `collaborative`, `owner_id`, `owner_name`, `tracks_total`, `href`, `external_url`, `snapshot_id`
+
+### Tracks CSV
+---
+
+## 🔧 Configuration
+
+- **Cache Directory**: `.caches/` - Stores user-specific authentication tokens
+- **Environment Variables**: Load from `.env` file via `python-dotenv`
+- **Rate Limiting**: Implements exponential backoff for API rate limit (429) responses
+
+---
+
+## 📦 Dependencies
+
+- `spotipy` - Spotify Web API client
+- `python-dotenv` - Environment variable management
+- `ipykernel` - Jupyter kernel for notebook support
 
 ---
 
