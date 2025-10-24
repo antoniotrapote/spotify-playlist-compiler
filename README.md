@@ -1,119 +1,159 @@
 # Spotify Playlist Compiler
 
-An application to export your Spotify playlists to CSV files.
+Una aplicación web elegante para descargar tus playlists de Spotify en formato CSV, sin necesidad de almacenar tokens localmente.
 
-This project compiles all your playlists and tracks from Spotify into easily accessible CSV files, allowing you to:
-- Export all your playlists with metadata (name, owner, track count, etc.)
-- Export all tracks from your playlists with detailed information (artist, album, duration, explicit flag, etc.)
-- Manage multiple user accounts with separate cache files
-- Handle API rate limiting gracefully
+## 🎯 Características
 
----
+- **Autenticación OAuth2 segura** con Spotify
+- **Sin almacenamiento local** de tokens (sesión en memoria)
+- **Barra de progreso en tiempo real** mediante Server-Sent Events
+- **Descarga directa al navegador** en formato CSV
+- **Interfaz responsiva** con animaciones fluidas
+- Incluye playlists y "Canciones que te gustan"
 
-## Features
-
-- 🔐 Secure Spotify OAuth authentication
-- 📊 Exports playlists to CSV format
-- 🎵 Exports all tracks with comprehensive metadata
-- 👥 Multi-user support with dedicated cache files
-- ⚡ Rate limiting and retry logic for API calls
-- 🛡️ Safe nested dictionary access for robust data extraction
-
----
-
-## Setup
-
-
-
----
-
-## 📁 Structure
+## 🔐 Flujo de Autenticación
 
 ```
-.github/               # Copilot and instructions files
-.vscode/               # VSCode settings and extensions
-.caches/               # User authentication cache files
-.gitignore             # Excludes .venv, .env, and temporary files
-AGENTS.md              # AI assistant documentation
-LICENSE                # MIT License
-README.md              # This file
-requirements.txt       # Project dependencies
-research.ipynb         # Development notebook with export logic
-export_spotify.py      # Main export script
+1. Usuario hace clic en "Connect to Spotify"
+   ↓
+2. Se genera un state token (CSRF protection)
+   ↓
+3. Se redirige a Spotify para autorizar
+   ↓
+4. Spotify devuelve código de autorización
+   ↓
+5. Aplicación intercambia código por access token
+   ↓
+6. Token se almacena en sesión Flask (en memoria, no en disco)
+   ↓
+7. Usuario autenticado puede descargar datos
 ```
 
----
+**Seguridad:**
+- ✅ Tokens en memoria (no en archivos)
+- ✅ CSRF protection con state tokens
+- ✅ Uso de refresh tokens para renovación
+- ✅ Sesión segura con SECRET_KEY
 
-## 🚀 Usage
+## 📁 Estructura del Proyecto
 
-### Requirements
-- Python 3.10+
-- Spotify Developer Account ([register here](https://developer.spotify.com/dashboard))
+```
+.
+├── backend/                          # API y lógica del servidor
+│   ├── app.py                       # Aplicación Flask
+│   ├── config.py                    # Configuración (env vars)
+│   ├── auth.py                      # Gestión OAuth2
+│   ├── routes.py                    # Endpoints API
+│   └── services/
+│       ├── __init__.py
+│       └── playlist_compilator.py   # Exportación de Spotify
+│
+├── frontend/                         # Interfaz web
+│   ├── index.html                   # Estructura HTML
+│   ├── script.js                    # Lógica del cliente
+│   └── styles.css                   # Estilos (Spotify theme)
+│
+├── run.py                           # Punto de entrada
+├── requirements.txt                 # Dependencias Python
+└── .env                             # Variables de configuración
+```
 
-### Installation
+## 🚀 Guía de Inicio
 
-1. Clone the repository
-2. Create a virtual environment:
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # macOS/Linux
-   .venv\Scripts\activate     # Windows
-   ```
+### Requisitos
+- Python 3.9+
+- Cuenta de Spotify (desarrollador)
 
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Instalación
 
-4. Create a `.env` file with your Spotify credentials:
-   ```
-   SPOTIPY_CLIENT_ID=your_client_id
-   SPOTIPY_CLIENT_SECRET=your_client_secret
-   SPOTIPY_REDIRECT_URI=http://127.0.0.1:8000/callback
-   ```
-
-### Running the Export
-
-Execute the script to export your playlists and tracks:
+1. **Clonar el repositorio**
 ```bash
-python export_spotify.py
+git clone <repo-url>
+cd spoti-frontend
 ```
 
-Or use the Jupyter notebook in VS Code:
+2. **Crear ambiente virtual**
 ```bash
-research.ipynb
+python -m venv .venv
+source .venv/bin/activate
 ```
 
-This will generate two CSV files:
-- `playlists_<username>.csv` - All playlists with metadata
-- `tracks_<username>.csv` - All tracks from all playlists with detailed information
+3. **Instalar dependencias**
+```bash
+pip install -r requirements.txt
+```
 
----
+4. **Configurar variables de entorno** (`.env`)
+```env
+DEBUG=False
+HOST=0.0.0.0
+PORT=8000
+SECRET_KEY=tu-clave-secreta-aqui
 
-## 📄 Output Files
+SPOTIPY_CLIENT_ID=tu-client-id
+SPOTIPY_CLIENT_SECRET=tu-client-secret
+SPOTIPY_REDIRECT_URI=http://127.0.0.1:8000/callback
+```
 
-### Playlists CSV
-- `playlist_id`, `name`, `public`, `collaborative`, `owner_id`, `owner_name`, `tracks_total`, `href`, `external_url`, `snapshot_id`
+### Ejecutar
 
-### Tracks CSV
----
+```bash
+python run.py
+```
 
-## 🔧 Configuration
+Luego accede a `http://127.0.0.1:8000` en tu navegador.
 
-- **Cache Directory**: `.caches/` - Stores user-specific authentication tokens
-- **Environment Variables**: Load from `.env` file via `python-dotenv`
-- **Rate Limiting**: Implements exponential backoff for API rate limit (429) responses
+## 📊 Endpoints API
 
----
+| Endpoint | Método | Descripción |
+|----------|--------|-------------|
+| `/api/auth/login` | GET | Inicia sesión con Spotify |
+| `/api/auth/callback` | GET | Callback de Spotify (redirect) |
+| `/api/auth/status` | GET | Verifica si está autenticado |
+| `/api/auth/logout` | POST | Cierra sesión |
+| `/api/export/progress` | GET | Descarga con barra de progreso (SSE) |
 
-## 📦 Dependencies
+## 🎨 Interfaz
 
-- `spotipy` - Spotify Web API client
-- `python-dotenv` - Environment variable management
-- `ipykernel` - Jupyter kernel for notebook support
+- **Tema Spotify**: Verde (#1DB954) y negro (#191414)
+- **Animaciones fluidas**: Progress bar con shimmer effect
+- **Responsive**: Funciona en desktop y móvil
+- **Footer discreto**: Crédito del desarrollador
 
----
+## 📦 Dependencias Principales
 
-## ⚖️ License
+- **Flask**: Framework web
+- **Spotipy**: Cliente oficial de Spotify API
+- **Flask-CORS**: Soporte CORS
+- **python-dotenv**: Gestión de variables de entorno
 
-MIT © Antonio L. Martínez Trapote
+## � Flujo de Descarga
+
+1. Usuario hace clic en "Download Playlists"
+2. Se abre conexión SSE a `/api/export/progress`
+3. Backend recopila playlists y canciones en tiempo real
+4. Frontend actualiza barra de progreso cada 5-10 segundos
+5. Al completar (100%), se generan dos CSV:
+   - `playlists_YYYY-MM-DD.csv`
+   - `tracks_YYYY-MM-DD.csv`
+6. Archivos se descargan automáticamente al navegador
+
+## ⚙️ Configuración Spotify
+
+1. Ve a [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+2. Crea una nueva aplicación
+3. Acepta los términos y configura
+4. Copia `Client ID` y `Client Secret`
+5. Configura Redirect URI: `http://127.0.0.1:8000/callback`
+6. Agrega valores a `.env`
+
+## 📝 Notas
+
+- Los tokens no se guardan en disco
+- La sesión expira cuando cierras el navegador
+- Máximo 50 items por página en la API de Spotify
+- Reintento automático en rate limiting (429)
+
+## 👨‍💻 Desarrollado por
+
+**Antonio Trapote** ®
