@@ -1,0 +1,250 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #1db954 0%, #191414 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 20px 60px 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+h1 {
+    font-size: 28px;
+    color: #191414;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #686868;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.auth-section {
+    margin-bottom: 20px;
+}
+
+.auth-section p {
+    font-size: 14px;
+    color: #686868;
+    margin-bottom: 20px;
+}
+
+.download-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.btn {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: #1db954;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #1ed760;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
+}
+
+.btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: #686868;
+    color: white;
+    margin-top: 10px;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #868686;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(104, 104, 104, 0.3);
+}
+
+.btn-secondary:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.icon {
+    font-size: 18px;
+}
+
+.status {
+    margin-top: 20px;
+    min-height: 20px;
+    font-size: 14px;
+}
+
+.status.loading {
+    color: #1db954;
+    font-weight: 600;
+}
+
+.status.success {
+    color: #1db954;
+    font-weight: 600;
+}
+
+.status.error {
+    color: #e22134;
+    font-weight: 600;
+}
+
+.progress-container {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: rgba(29, 185, 84, 0.1);
+    border-radius: 8px;
+    border-left: 4px solid #1db954;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#progressStatus {
+    margin: 0 0 15px 0;
+    color: #1db954;
+    font-weight: 600;
+    font-size: 14px;
+    min-height: 20px;
+    transition: color 0.3s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.progress-bar-wrapper {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    height: 30px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #1db954, #1ed760);
+    transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(29, 185, 84, 0.3);
+    position: relative;
+}
+
+/* Efecto de brillo animado */
+.progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.3),
+            transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.progress-text {
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+/* Footer */
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(25, 20, 20, 0.9);
+    padding: 12px 20px;
+    text-align: center;
+    font-size: 12px;
+    color: #b3b3b3;
+    border-top: 1px solid rgba(29, 185, 84, 0.2);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+}
+
+.footer p {
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.footer p:hover {
+    color: #1db954;
+    transition: color 0.3s ease;
+}

@@ -1,11 +1,10 @@
-import csv
+"""Spotify playlist exporter module."""
+
 import time
-import os
-from typing import Iterator, Dict, Any, Optional, Tuple, List
-from dotenv import load_dotenv
+from typing import Iterator, Dict, Any, Optional, List
 from spotipy import Spotify
-from spotipy.oauth2 import SpotifyOAuth
 from spotipy.exceptions import SpotifyException
+
 
 def safe_get_nested(data: dict, *keys: str) -> str | None:
     """Safely retrieve a string value from nested dictionaries."""
@@ -16,20 +15,11 @@ def safe_get_nested(data: dict, *keys: str) -> str | None:
             return None
     return data if isinstance(data, str) else None
 
-# ===== Configuración =====
-# + user-library-read para acceder a "Canciones que te gustan"
-SCOPES = "playlist-read-private playlist-read-collaborative user-library-read"
-CACHE_DIR = ".caches"
-os.makedirs(CACHE_DIR, exist_ok=True)
 
-def get_export_dir(username: str) -> str:
-    """Create and return the export directory for the given username."""
-    export_dir = f"{username}_downloads"
-    os.makedirs(export_dir, exist_ok=True)
-    return export_dir
-
-def backoff_sleep(seconds: int):
+def backoff_sleep(seconds: int) -> None:
+    """Sleep with backoff."""
     time.sleep(max(1, int(seconds)))
+
 
 def paginate(fetch_fn, key="items", limit=50, **kwargs) -> Iterator[Dict[str, Any]]:
     """Iterador para recorrer páginas de la API."""
@@ -52,28 +42,37 @@ def paginate(fetch_fn, key="items", limit=50, **kwargs) -> Iterator[Dict[str, An
         else:
             break
 
+
 def track_artists_str(track: Dict[str, Any]) -> str:
+    """Get comma-separated string of artist names."""
     return ", ".join(a["name"] for a in (track.get("artists") or []))
 
-def get_spotify_client() -> Tuple[Spotify, str]:
-    """Autentica y gestiona caches por usuario."""
-    load_dotenv()
-    temp_cache = os.path.join(CACHE_DIR, ".cache_temp")
-    sp_temp = Spotify(auth_manager=SpotifyOAuth(scope=SCOPES, cache_path=temp_cache))
-    me = sp_temp.current_user()
+
+def get_spotify_client() -> tuple[Spotify, str]:
+    """Autentica usando access token en memoria (sin guardar archivos de caché)."""
+    raise NotImplementedError("Use export_data(access_token) instead")
+
+
+def export_data(access_token: str) -> tuple[List[Dict[str, Any]], List[List[str]]]:
+    """Export all playlists and tracks from Spotify as JSON data using an access token.
+    
+    Args:
+        access_token: Spotify OAuth2 access token
+        
+    Returns:
+        Tuple of (playlists_data, tracks_data)
+    """
+    # Create Spotify client with access token (no cache files)
+    sp = Spotify(auth=access_token)
+    
+    # Get current user info
+    me = sp.current_user()
+    if not me or not isinstance(me, dict) or "id" not in me:
+        raise RuntimeError("Failed to fetch current user from Spotify; verify authentication.")
     username = me["id"]
-    print(f"✅ Autenticado como: {me.get('display_name') or username} ({username})")
-    user_cache = os.path.join(CACHE_DIR, f".cache_{username}")
-    if os.path.exists(temp_cache) and not os.path.exists(user_cache):
-        os.rename(temp_cache, user_cache)
-    sp = Spotify(auth_manager=SpotifyOAuth(scope=SCOPES, cache_path=user_cache))
-    return sp, username
-
-def export_all() -> None:
-    """Export all playlists and tracks from Spotify to CSV files."""
-    sp, username = get_spotify_client()
-    export_dir = get_export_dir(username)
-
+    display_name = me.get("display_name") or username
+    print(f"✅ Autenticado como: {display_name} ({username})")
+    
     # --- 1) Recoger playlists "reales"
     playlists_rows: List[Dict[str, Any]] = []
     print("📥 Descargando playlists…")
@@ -85,17 +84,15 @@ def export_all() -> None:
             "collaborative": pl.get("collaborative"),
             "owner_id": safe_get_nested(pl, "owner", "id"),
             "owner_name": safe_get_nested(pl, "owner", "display_name"),
-            # total es numérico → no usar safe_get_nested aquí
             "tracks_total": (pl.get("tracks") or {}).get("total"),
             "href": pl.get("href"),
             "external_url": safe_get_nested(pl, "external_urls", "spotify"),
             "snapshot_id": pl.get("snapshot_id"),
         })
 
-    # --- 2) Recoger "Canciones que te gustan" (Saved Tracks) una vez
+    # --- 2) Recoger "Canciones que te gustan" (Saved Tracks)
     print("📥 Descargando 'Canciones que te gustan'…")
     liked_items = list(paginate(lambda **kw: sp.current_user_saved_tracks(**kw)))
-    # Filtrar a solo canciones (por consistencia)
     liked_items = [it for it in liked_items if (it.get("track") or {}).get("type") == "track"]
 
     liked_pid = f"liked_{username}"
@@ -103,7 +100,6 @@ def export_all() -> None:
     liked_owner = username
     liked_total = len(liked_items)
 
-    # Añadir la pseudo-playlist ANTES de escribir el CSV de playlists
     playlists_rows.append({
         "playlist_id": liked_pid,
         "name": liked_pname,
@@ -117,20 +113,7 @@ def export_all() -> None:
         "snapshot_id": None,
     })
 
-    # --- 3) Escribir playlists.csv una sola vez (ya incluye la de liked)
-    playlists_file = os.path.join(export_dir, f"playlists_{username}.csv")
-    with open(playlists_file, "w", newline="", encoding="utf-8") as f:
-        fieldnames = list(playlists_rows[0].keys()) if playlists_rows else [
-            "playlist_id","name","public","collaborative","owner_id","owner_name",
-            "tracks_total","href","external_url","snapshot_id"
-        ]
-        w = csv.DictWriter(f, fieldnames=fieldnames)
-        w.writeheader()
-        for row in playlists_rows:
-            w.writerow(row)
-    print(f"💾 Guardado: {playlists_file} ({len(playlists_rows)} playlists)")
-
-    # --- 4) Escribir tracks.csv (playlists reales + liked)
+    # --- 3) Preparar encabezados y datos de tracks
     track_headers = [
         "playlist_id","playlist_name","playlist_owner_id",
         "added_at","added_by_id",
@@ -139,16 +122,14 @@ def export_all() -> None:
         "album_name","album_upc","album_release_date","duration_ms",
         "explicit","is_local"
     ]
-    tracks_file = os.path.join(export_dir, f"tracks_{username}.csv")
-    out = open(tracks_file, "w", newline="", encoding="utf-8")
-    w = csv.writer(out)
-    w.writerow(track_headers)
-
+    
+    tracks_data: List[List[str]] = [track_headers]
     print("📥 Descargando canciones por playlist…")
-    # 4a) Playlists reales
+    
+    # 3a) Playlists reales
     for pl in playlists_rows:
         if pl["playlist_id"] == liked_pid:
-            continue  # saltamos la liked aquí; la volcamos en 4b
+            continue
         pid = pl["playlist_id"]
         pname = pl["name"]
         owner_id = pl["owner_id"]
@@ -165,22 +146,25 @@ def export_all() -> None:
                 continue
             row = [
                 pid, pname, owner_id,
-                added_at, added_by_id,
-                t.get("id"),
-                safe_get_nested(t, "external_ids", "isrc"),
-                t.get("uri"),
-                safe_get_nested(t, "external_urls", "spotify"),
-                t.get("name"), t.get("popularity"),
+                added_at, added_by_id or "",
+                t.get("id") or "",
+                safe_get_nested(t, "external_ids", "isrc") or "",
+                t.get("uri") or "",
+                safe_get_nested(t, "external_urls", "spotify") or "",
+                t.get("name") or "",
+                str(t.get("popularity") or ""),
                 track_artists_str(t),
-                safe_get_nested(t, "album", "name"),
-                safe_get_nested(t, "album", "external_ids", "upc"),
-                safe_get_nested(t, "album", "release_date"),
-                t.get("duration_ms"), t.get("explicit"), is_local
+                safe_get_nested(t, "album", "name") or "",
+                safe_get_nested(t, "album", "external_ids", "upc") or "",
+                safe_get_nested(t, "album", "release_date") or "",
+                str(t.get("duration_ms") or ""),
+                str(t.get("explicit") or ""),
+                str(is_local)
             ]
-            w.writerow(row)
+            tracks_data.append(row)
         time.sleep(0.1)
 
-    # 4b) Volcar "Canciones que te gustan" desde liked_items ya descargados
+    # 3b) Volcar "Canciones que te gustan"
     for item in liked_items:
         added_at = item.get("added_at")
         t: Optional[Dict[str, Any]] = item.get("track")
@@ -188,25 +172,24 @@ def export_all() -> None:
             continue
         row = [
             liked_pid, liked_pname, liked_owner,
-            added_at, None,  # added_by_id no aplica en saved tracks
-            t.get("id"),
-            safe_get_nested(t, "external_ids", "isrc"),
-            t.get("uri"),
-            safe_get_nested(t, "external_urls", "spotify"),
-            t.get("name"), t.get("popularity"),
+            added_at, None or "",
+            t.get("id") or "",
+            safe_get_nested(t, "external_ids", "isrc") or "",
+            t.get("uri") or "",
+            safe_get_nested(t, "external_urls", "spotify") or "",
+            t.get("name") or "",
+            str(t.get("popularity") or ""),
             track_artists_str(t),
-            safe_get_nested(t, "album", "name"),
-            safe_get_nested(t, "album", "external_ids", "upc"),
-            safe_get_nested(t, "album", "release_date"),
-            t.get("duration_ms"), t.get("explicit"), False
+            safe_get_nested(t, "album", "name") or "",
+            safe_get_nested(t, "album", "external_ids", "upc") or "",
+            safe_get_nested(t, "album", "release_date") or "",
+            str(t.get("duration_ms") or ""),
+            str(t.get("explicit") or ""),
+            str(False)
         ]
-        w.writerow(row)
+        tracks_data.append(row)
 
-    out.close()
-    print(f"💾 Guardado: {tracks_file}")
     print("🎉 Export completo.")
-    print(f"📁 Archivos guardados en: {export_dir}/")
+    return playlists_rows, tracks_data
 
 
-if __name__ == "__main__":
-    export_all()

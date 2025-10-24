@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Playlists Compiler</title>
+    <meta name="description" content="Compile your Spotify playlists easily.">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>Spotify Playlists Compiler</h1>
+            <p class="subtitle">Download all your playlists in CSV format</p>
+
+            <!-- Login Section -->
+            <div id="loginSection" class="auth-section">
+                <p>To download your playlists, you need to authenticate with Spotify.</p>
+                <button id="loginBtn" class="btn btn-primary">
+                    Connect to Spotify
+                </button>
+            </div>
+
+            <!-- Download Section -->
+            <div id="downloadSection" class="download-section" style="display: none;">
+                <button id="downloadBtn" class="btn btn-primary">
+                    Download Playlists
+                </button>
+
+                <button id="logoutBtn" class="btn btn-secondary">
+                    Logout
+                </button>
+            </div>
+
+            <!-- Progress Bar -->
+            <div id="progressContainer" class="progress-container" style="display: none;">
+                <p id="progressStatus">Descargando...</p>
+                <div class="progress-bar-wrapper">
+                    <div id="progressBar" class="progress-bar" style="width: 0%;">
+                        <span class="progress-text">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="status" class="status"></div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>Developed by &reg; Antonio Trapote</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
