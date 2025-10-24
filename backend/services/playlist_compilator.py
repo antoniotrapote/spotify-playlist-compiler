@@ -1,4 +1,4 @@
-"""Spotify playlist exporter module."""
+"""Spotify playlist compilator module."""
 
 import time
 from typing import Iterator, Dict, Any, Optional, List
@@ -191,5 +191,3 @@ def export_data(access_token: str) -> tuple[List[Dict[str, Any]], List[List[str]
 
     print("🎉 Export completo.")
     return playlists_rows, tracks_data
-
-

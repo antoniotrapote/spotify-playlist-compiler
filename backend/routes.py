@@ -76,7 +76,7 @@ def export_with_progress():
     def generate_progress():
         """Generator function that yields progress updates."""
         try:
-            from backend.spotify_export.exporter import paginate, safe_get_nested, track_artists_str
+            from backend.services.playlist_compilator import paginate, safe_get_nested, track_artists_str
             from typing import List, Dict, Any, Optional
             
             # Create Spotify client
