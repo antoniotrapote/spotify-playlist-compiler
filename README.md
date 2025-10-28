@@ -17,19 +17,15 @@ Web application to download your Spotify playlists in CSV format. Including OAut
 
 ```
 1. User clicks "Connect to Spotify"
-   ↓
 2. A state token is generated (CSRF protection)
-   ↓
 3. Redirected to Spotify for authorization
-   ↓
 4. Spotify returns authorization code
-   ↓
 5. Application exchanges code for access token
-   ↓
 6. Token is stored in Flask session (in-memory, not on disk)
-   ↓
 7. Authenticated user can download data
 ```
+
+More details in [AUTHENTICATION.md](./AUTHENTICATION.md)
 
 **Security:**
 - ✅ Tokens in memory (not in files)
