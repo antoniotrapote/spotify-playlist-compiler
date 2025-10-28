@@ -147,7 +147,9 @@ async function downloadWithProgress() {
         downloadBtn.disabled = false;
         logoutBtn.disabled = false;
     }
-}/**
+}
+
+/**
  * Download multiple CSV files.
  * 
  * @param {Array<Array>} playlists - Array of playlist data
