@@ -1,5 +1,5 @@
 # Spotify Playlist Compiler
-[![CC BY-NC-SA 4.0](https://licensebuttons.net/l/by-nc-sa/4.0/80x15.png)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC_BY--NC--SA_4.0-black?logo=creativecommons&logoColor=white)](LICENSE)
 
 Web application to download your Spotify playlists in CSV format. Including OAuth2 authentication to manage your data securely without storing tokens locally.
 
@@ -156,5 +156,3 @@ Then access `http://127.0.0.1:8000` in your browser.
 ## ⚖️ License
 
 CC BY-NC-SA 4.0 &copy; 2025 [Antonio L. Martínez Trapote](https://github.com/antoniotrapote) 
-
-[![CC BY-NC-SA 4.0](https://licensebuttons.net/l/by-nc-sa/4.0/80x15.png)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
